@@ -1,0 +1,22 @@
+# datasets
+data/raw/candidates.jsonl
+
+# generated files
+data/processed/
+data/outputs/
+
+# embeddings
+*.npy
+*.faiss
+*.parquet
+
+# python
+__pycache__/
+*.pyc
+
+# vscode
+.vscode/
+
+# env
+.venv/
+env/
