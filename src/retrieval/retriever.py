@@ -42,6 +42,10 @@ class FaissRetriever:
         else:
             query = query_embedding.astype(np.float32)
 
+        norms = np.linalg.norm(query, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        query = query / norms
+
         scores, indices = self.index_bundle.index.search(query, top_k)
         hits: List[RetrievalHit] = []
         candidate_ids = self.index_bundle.candidate_ids

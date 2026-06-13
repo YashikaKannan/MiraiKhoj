@@ -48,6 +48,9 @@ class FaissIndexBuilder:
         faiss = _require_faiss()
         embeddings = np.asarray(embeddings, dtype=np.float32)
         dimension = embeddings.shape[1]
+        norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        embeddings = embeddings / norms
 
         if self.use_hnsw:
             index = faiss.IndexHNSWFlat(dimension, self.hnsw_m, faiss.METRIC_INNER_PRODUCT)

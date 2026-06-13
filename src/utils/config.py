@@ -8,9 +8,9 @@ from typing import Dict, Sequence, Set
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "outputs"
+DEFAULT_OUTPUT_DIR = DEFAULT_DATA_DIR / "outputs"
 
-PRIMARY_EMBEDDING_MODEL = "BAAI/bge-large-en-v1.5"
+PRIMARY_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 FALLBACK_EMBEDDING_MODEL = "intfloat/e5-large-v2"
 
 SKILL_LEXICON: Set[str] = {
@@ -174,11 +174,13 @@ class PathConfig:
     """Common file system locations used by the pipeline."""
 
     data_dir: Path = DEFAULT_DATA_DIR
+    processed_dir: Path = DEFAULT_DATA_DIR / "processed"
     output_dir: Path = DEFAULT_OUTPUT_DIR
-    processed_candidates: Path = DEFAULT_OUTPUT_DIR / "processed_candidates.parquet"
-    candidate_embeddings: Path = DEFAULT_OUTPUT_DIR / "candidate_embeddings.npy"
-    candidate_index: Path = DEFAULT_OUTPUT_DIR / "candidate_index.faiss"
-    candidate_index_ids: Path = DEFAULT_OUTPUT_DIR / "candidate_index_ids.json"
+    processed_candidates: Path = DEFAULT_DATA_DIR / "processed" / "processed_candidates.csv"
+    candidate_embeddings: Path = DEFAULT_DATA_DIR / "processed" / "candidate_embeddings.npy"
+    candidate_index: Path = DEFAULT_DATA_DIR / "processed" / "candidate_index.faiss"
+    candidate_index_ids: Path = DEFAULT_DATA_DIR / "processed" / "candidate_index_ids.json"
+    ranked_candidates_csv: Path = DEFAULT_DATA_DIR / "outputs" / "ranked_candidates.csv"
 
 
 @dataclass(slots=True)

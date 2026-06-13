@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional, Sequence
 
 import numpy as np
@@ -18,6 +19,7 @@ class EmbeddingEngine:
     """Generate normalized embeddings with GPU-aware batching and fallbacks."""
 
     config: EmbeddingConfig = field(default_factory=EmbeddingConfig)
+    force_fallback: bool = field(default=False)
     _backend: str = field(init=False, default="unknown")
     _model: object | None = field(init=False, default=None)
     _tokenizer: object | None = field(init=False, default=None)
@@ -29,6 +31,7 @@ class EmbeddingEngine:
 
     def _initialize_backend(self) -> None:
         try:
+            # Try SentenceTransformers with the preferred BAAI model name
             from sentence_transformers import SentenceTransformer  # type: ignore
             import torch
 
@@ -65,6 +68,14 @@ class EmbeddingEngine:
         self._backend = "hashing"
         logger.info("Loaded HashingVectorizer fallback backend")
 
+    def save_embeddings(self, embeddings: np.ndarray, path: str | Path) -> None:
+        """Persist embeddings as a numpy .npy file to the given path."""
+
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        np.save(path, embeddings)
+        logger.info("Saved embeddings to %s", path)
+
     def encode_texts(self, texts: Sequence[str], batch_size: Optional[int] = None) -> np.ndarray:
         """Encode texts into normalized dense vectors."""
 
@@ -74,14 +85,7 @@ class EmbeddingEngine:
             return np.zeros((0, 1), dtype=np.float32)
 
         if self._backend == "sentence_transformers":
-            embeddings = self._model.encode(  # type: ignore[union-attr]
-                cleaned_texts,
-                batch_size=batch_size,
-                convert_to_numpy=True,
-                normalize_embeddings=self.config.normalize,
-                show_progress_bar=False,
-            )
-            return np.asarray(embeddings, dtype=np.float32)
+            return self._encode_with_sentence_transformers(cleaned_texts, batch_size)
 
         if self._backend == "transformers":
             return self._encode_with_transformers(cleaned_texts, batch_size)
@@ -98,7 +102,8 @@ class EmbeddingEngine:
 
         all_embeddings = []
         self._model.eval()  # type: ignore[union-attr]
-        for start in range(0, len(texts), batch_size):
+        total_batches = max(1, (len(texts) + batch_size - 1) // batch_size)
+        for batch_index, start in enumerate(range(0, len(texts), batch_size), start=1):
             batch = list(texts[start : start + batch_size])
             encoded = self._tokenizer(  # type: ignore[union-attr]
                 batch,
@@ -122,6 +127,25 @@ class EmbeddingEngine:
                     norms[norms == 0] = 1.0
                     batch_embeddings = batch_embeddings / norms
             all_embeddings.append(batch_embeddings)
+            if batch_index == 1 or batch_index % 10 == 0 or batch_index == total_batches:
+                logger.info("Encoded embedding batch %s/%s", batch_index, total_batches)
+        return np.vstack(all_embeddings)
+
+    def _encode_with_sentence_transformers(self, texts: Sequence[str], batch_size: int) -> np.ndarray:
+        all_embeddings = []
+        total_batches = max(1, (len(texts) + batch_size - 1) // batch_size)
+        for batch_index, start in enumerate(range(0, len(texts), batch_size), start=1):
+            batch = list(texts[start : start + batch_size])
+            embeddings = self._model.encode(  # type: ignore[union-attr]
+                batch,
+                batch_size=batch_size,
+                convert_to_numpy=True,
+                normalize_embeddings=self.config.normalize,
+                show_progress_bar=False,
+            )
+            all_embeddings.append(np.asarray(embeddings, dtype=np.float32))
+            if batch_index == 1 or batch_index % 10 == 0 or batch_index == total_batches:
+                logger.info("Encoded embedding batch %s/%s", batch_index, total_batches)
         return np.vstack(all_embeddings)
 
     def _encode_with_hashing(self, texts: Sequence[str]) -> np.ndarray:
