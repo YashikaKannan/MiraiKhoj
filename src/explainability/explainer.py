@@ -17,16 +17,57 @@ class CandidateExplainer:
 
         reasons: List[str] = []
 
+        candidate = ranked_candidate.candidate_payload
+
+        years = candidate.get("years_of_experience")
+        title = candidate.get("current_title")
+        company = candidate.get("current_company")
+        if years:
+            reasons.append(
+                f"{years} years of relevant experience."
+            )
+
+        if title and company:
+            reasons.append(
+                f"Currently working as {title} at {company}."
+            )
+        if ranked_candidate.matched_skills:
+            reasons.append(
+                f"Matched {len(ranked_candidate.matched_skills)} JD skills including "
+                f"{', '.join(ranked_candidate.matched_skills[:5])}."
+            )
+
+
+        retrieval_tools = []
+
+        for tool in [
+            "faiss",
+            "elasticsearch",
+            "opensearch",
+            "qdrant",
+            "weaviate",
+            "milvus",
+            "pinecone",
+            "vector search",
+        ]:
+            if tool in ranked_candidate.evidence:
+                retrieval_tools.append(tool.upper())
+
+        if retrieval_tools:
+            reasons.append(
+                f"Hands-on experience with {', '.join(retrieval_tools[:4])}."
+            )
+
         if ranked_candidate.semantic_score >= 0.75:
-            reasons.append("Strong semantic alignment with the JD.")
+            reasons.append("High semantic match with the job description.")
         elif ranked_candidate.semantic_score >= 0.55:
             reasons.append("Relevant semantic overlap with the role requirements.")
 
         if ranked_candidate.career_score >= 0.70:
-            reasons.append("Career history shows strong role fit and progression.")
+            reasons.append("Strong career alignment with the target role.")
 
         if ranked_candidate.retrieval_expertise_score >= 0.55:
-            reasons.append("Hands-on retrieval, ranking, or search expertise detected.")
+            reasons.append("Strong retrieval and ranking expertise.")
 
         if ranked_candidate.behavioral_score >= 0.55:
             reasons.append("Positive recruitability and engagement signals.")

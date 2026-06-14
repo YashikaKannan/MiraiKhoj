@@ -22,6 +22,7 @@ class CandidateScoreBundle:
     trap_penalty: float
     evidence: List[str] = field(default_factory=list)
     candidate_payload: Dict[str, object] = field(default_factory=dict)
+    matched_skills: List[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -39,6 +40,7 @@ class RankedCandidate:
     trap_penalty: float
     evidence: List[str] = field(default_factory=list)
     candidate_payload: Dict[str, object] = field(default_factory=dict)
+    matched_skills: List[str] = field(default_factory=list)
 
 
 class HoneypotDetector:
@@ -124,6 +126,7 @@ class FinalRanker:
                     logistics_score=bundle.logistics_score,
                     trap_penalty=bundle.trap_penalty,
                     evidence=bundle.evidence,
+                    matched_skills=bundle.matched_skills,
                     candidate_payload=bundle.candidate_payload,
                 )
             )
