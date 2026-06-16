@@ -1,4 +1,4 @@
 # Ranking Report
 
-- Total ranked: 5
+- Total ranked: 10
 - Output: D:\MiraiKhoj\data\outputs\ranked_candidates.csv

@@ -19,7 +19,7 @@ from career.career_analyzer import CareerAnalyzer
 from career.retrieval_expertise import RetrievalExpertiseDetector
 from behavior.signal_engine import BehavioralSignalEngine
 from explainability.explainer import CandidateExplainer
-from ranking.ai_ranker import CandidateScoreBundle, FinalRanker, HoneypotDetector
+from ranking.ai_ranker import CandidateScoreBundle, FinalRanker, TrapDetector
 from ranking.semantic_ranker import SemanticRanker
 from retrieval.retriever import FaissRetriever
 from embeddings.embedder import EmbeddingEngine
@@ -55,7 +55,7 @@ def run(jd_text: str, top_k: int = 20) -> dict:
     career = CareerAnalyzer()
     retrieval_exp = RetrievalExpertiseDetector()
     behavior = BehavioralSignalEngine()
-    honeypot = HoneypotDetector()
+    trap_detector = TrapDetector()    
     semantic = SemanticRanker()
     final_ranker = FinalRanker()
     explainer = CandidateExplainer()
@@ -80,8 +80,20 @@ def run(jd_text: str, top_k: int = 20) -> dict:
         career_analysis = career.analyze(cand_payload)
         retr_analysis = retrieval_exp.analyze(cand_payload)
         beh = behavior.analyze(cand_payload)
-        trap = honeypot.detect(cand_payload)
-
+        
+        trap_result = trap_detector.detect(cand_payload)
+        trap_penalty = trap_result["trap_penalty"] / 40.0
+        
+        print(
+            hit.candidate_id,
+            sem,
+            career_analysis.career_score,
+            retr_analysis.retrieval_expertise_score,
+            beh.behavioral_score,
+            beh.credibility_score,
+            beh.logistics_score,
+            trap_result
+        )
         bundles.append(
             CandidateScoreBundle(
                 candidate_id=hit.candidate_id,
@@ -94,7 +106,7 @@ def run(jd_text: str, top_k: int = 20) -> dict:
                 behavioral_score=beh.behavioral_score,
                 credibility_score=beh.credibility_score,
                 logistics_score=beh.logistics_score,
-                trap_penalty=trap,
+                trap_penalty=trap_penalty,
                 evidence=career_analysis.evidence + retr_analysis.technology_hits + retr_analysis.evaluation_hits + beh.evidence,
                 candidate_payload=cand_payload,
                 matched_skills=matched_skills,

@@ -105,11 +105,11 @@ The Behavioral Engine enriches the AI output with:
 
 ```json
 {
-  "availability_score": 0.0,
-  "recruitability_score": 0.0,
-  "credibility_score": 0.0,
-  "engagement_score": 0.0,
-  "trap_penalty": 0.0
+  "availability_score": 0.73,
+  "recruitability_score": 0.81,
+  "credibility_score": 0.92,
+  "engagement_score": 0.77,
+  "trap_penalty": 0.00
 }
 ```
 
