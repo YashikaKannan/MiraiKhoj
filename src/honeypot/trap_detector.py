@@ -85,11 +85,12 @@ class TrapDetector:
 
         return {
             "candidate_id": candidate.get("candidate_id"),
-            "trap_penalty": final_penalty,
+            "trap_penalty": final_penalty/40.0,
             "trap_flags": trap_flags,
             "is_high_risk_trap": final_penalty >= 25,
             "is_possible_honeypot": final_penalty >= 32,
         }
+        print(candidate.keys())
 
     def _keyword_stuffing(self, profile, skills, career):
         flags = []
