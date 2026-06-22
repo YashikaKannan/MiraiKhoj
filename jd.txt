@@ -1,0 +1,15 @@
+Senior AI Engineer
+
+Required Skills:
+Python
+Machine Learning
+NLP
+RAG
+Vector Databases
+FAISS
+Elasticsearch
+Recommendation Systems
+Search Ranking
+
+Experience:
+3+ years

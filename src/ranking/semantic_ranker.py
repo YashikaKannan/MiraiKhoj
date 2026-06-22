@@ -24,3 +24,11 @@ class SemanticRanker:
             return 0.0
         cosine = numerator / denominator
         return max(0.0, min(1.0, (cosine + 1.0) / 2.0))
+    def skill_match_score(self, jd_skills: list[str], candidate_text: str,) -> float:
+        matched = 0
+
+        for skill in jd_skills:
+            if skill.lower() in candidate_text.lower():
+                matched += 1
+
+        return matched / max(len(jd_skills), 1)

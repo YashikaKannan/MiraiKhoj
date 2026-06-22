@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Sequence
-
+from honeypot.trap_detector import TrapDetector
 from utils.config import RankingWeights
 
 
@@ -22,6 +22,7 @@ class CandidateScoreBundle:
     trap_penalty: float
     evidence: List[str] = field(default_factory=list)
     candidate_payload: Dict[str, object] = field(default_factory=dict)
+    matched_skills: List[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -39,51 +40,52 @@ class RankedCandidate:
     trap_penalty: float
     evidence: List[str] = field(default_factory=list)
     candidate_payload: Dict[str, object] = field(default_factory=dict)
+    matched_skills: List[str] = field(default_factory=list)
 
 
-class HoneypotDetector:
-    """Detect suspicious, keyword-stuffed, or inconsistent profiles."""
+# class HoneypotDetector:
+#     """Detect suspicious, keyword-stuffed, or inconsistent profiles."""
 
-    KEYWORD_STUFFING_PATTERNS = ["faiss faiss", "search search", "machine learning machine learning", "ranking ranking"]
-    FAKE_SENIOR_PATTERNS = ["principal engineer", "staff engineer", "director", "vp", "head of"]
-    CONSULTING_ONLY_PATTERNS = ["consulting", "services", "outsourcing", "staffing"]
+#     KEYWORD_STUFFING_PATTERNS = ["faiss faiss", "search search", "machine learning machine learning", "ranking ranking"]
+#     FAKE_SENIOR_PATTERNS = ["principal engineer", "staff engineer", "director", "vp", "head of"]
+#     CONSULTING_ONLY_PATTERNS = ["consulting", "services", "outsourcing", "staffing"]
 
-    def detect(self, candidate: Dict[str, object]) -> float:
-        text_blob = self._text_blob(candidate)
-        penalty = 0.0
+#     def detect(self, candidate: Dict[str, object]) -> float:
+#         text_blob = self._text_blob(candidate)
+#         penalty = 0.0
 
-        stuffing_hits = sum(1 for pattern in self.KEYWORD_STUFFING_PATTERNS if pattern in text_blob)
-        if stuffing_hits:
-            penalty += min(0.25, 0.08 * stuffing_hits)
+#         stuffing_hits = sum(1 for pattern in self.KEYWORD_STUFFING_PATTERNS if pattern in text_blob)
+#         if stuffing_hits:
+#             penalty += min(0.25, 0.08 * stuffing_hits)
 
-        senior_hits = sum(1 for pattern in self.FAKE_SENIOR_PATTERNS if pattern in text_blob)
-        years = self._extract_years(text_blob)
-        if senior_hits and years is not None and years < 4:
-            penalty += 0.20
+#         senior_hits = sum(1 for pattern in self.FAKE_SENIOR_PATTERNS if pattern in text_blob)
+#         years = self._extract_years(text_blob)
+#         if senior_hits and years is not None and years < 4:
+#             penalty += 0.20
 
-        consulting_hits = sum(1 for pattern in self.CONSULTING_ONLY_PATTERNS if pattern in text_blob)
-        if consulting_hits and not any(term in text_blob for term in ["product", "startup", "platform", "saas", "search", "marketplace"]):
-            penalty += 0.18
+#         consulting_hits = sum(1 for pattern in self.CONSULTING_ONLY_PATTERNS if pattern in text_blob)
+#         if consulting_hits and not any(term in text_blob for term in ["product", "startup", "platform", "saas", "search", "marketplace"]):
+#             penalty += 0.18
 
-        if self._looks_inconsistent(text_blob):
-            penalty += 0.12
+#         if self._looks_inconsistent(text_blob):
+#             penalty += 0.12
 
-        return max(0.0, min(1.0, penalty))
+#         return max(0.0, min(1.0, penalty))
 
-    def _text_blob(self, candidate: Dict[str, object]) -> str:
-        pieces = [str(value) for value in candidate.values() if value]
-        return " ".join(pieces).lower()
+#     def _text_blob(self, candidate: Dict[str, object]) -> str:
+#         pieces = [str(value) for value in candidate.values() if value]
+#         return " ".join(pieces).lower()
 
-    def _extract_years(self, text_blob: str) -> float | None:
-        import re
+#     def _extract_years(self, text_blob: str) -> float | None:
+#         import re
 
-        match = re.search(r"(\d{1,2})\s*\+?\s*(?:years?|yrs?)", text_blob)
-        if match:
-            return float(match.group(1))
-        return None
+#         match = re.search(r"(\d{1,2})\s*\+?\s*(?:years?|yrs?)", text_blob)
+#         if match:
+#             return float(match.group(1))
+#         return None
 
-    def _looks_inconsistent(self, text_blob: str) -> bool:
-        return any(flag in text_blob for flag in ["intern at many companies", "worked at 20+ companies", "founded 10 startups"])
+#     def _looks_inconsistent(self, text_blob: str) -> bool:
+#         return any(flag in text_blob for flag in ["intern at many companies", "worked at 20+ companies", "founded 10 startups"])
 
 
 @dataclass(slots=True)
@@ -124,6 +126,7 @@ class FinalRanker:
                     logistics_score=bundle.logistics_score,
                     trap_penalty=bundle.trap_penalty,
                     evidence=bundle.evidence,
+                    matched_skills=bundle.matched_skills,
                     candidate_payload=bundle.candidate_payload,
                 )
             )
