@@ -27,7 +27,7 @@ def build_index(embeddings_path: Path | str | None = None) -> dict:
     emb = np.load(embeddings_path, mmap_mode="r")
 
     # load candidate ids
-    cand_df = pd.read_csv("data/processed/relevant_candidates.csv")
+    cand_df = pd.read_csv("data/processed/processed_candidates.csv")
     candidate_ids: List[str] = cand_df["candidate_id"].astype(str).tolist()
 
     builder = FaissIndexBuilder()

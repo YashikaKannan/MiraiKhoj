@@ -24,11 +24,13 @@ class CareerAnalysis:
 class CareerAnalyzer:
     """Score candidates based on titles, progression, companies, and projects."""
 
-    def analyze(self, candidate: Dict[str, object]) -> CareerAnalysis:
+    def analyze(self, candidate: Dict[str, object], target_roles: List[str],) -> CareerAnalysis:
         """Return a normalized career-fit score with supporting evidence."""
 
         text_blob = self._build_text_blob(candidate)
-        role_relevance, role_evidence = self._role_relevance(text_blob)
+        # target_roles = candidate.get("target_roles", [])
+
+        role_relevance, role_evidence = self._role_relevance(text_blob, target_roles)
         retrieval_experience, retrieval_evidence = self._retrieval_experience(text_blob)
         career_growth = self._career_growth(text_blob)
         company_quality, company_evidence, consulting_penalty = self._company_quality(text_blob)
@@ -59,16 +61,49 @@ class CareerAnalyzer:
                 parts.append(str(value))
         return "\n".join(parts).lower()
 
-    def _role_relevance(self, text_blob: str) -> tuple[float, List[str]]:
+    def _role_relevance(self, text_blob: str, target_roles: List[str],) -> tuple[float, List[str]]:
+
         evidence: List[str] = []
-        scores: List[float] = []
-        for role, weight in ROLE_KEYWORDS.items():
+
+        BAD_ROLES = {
+            "marketing manager",
+            "operations manager",
+            "customer support",
+            "hr manager",
+            "accountant",
+            "civil engineer",
+            "sales manager",
+            "content writer",
+        }
+
+        # Strong penalty for clearly irrelevant careers
+        for role in BAD_ROLES:
             if role in text_blob:
-                scores.append(weight)
-                evidence.append(f"role: {role}")
-        if not scores:
-            return 0.0, evidence
-        return min(1.0, sum(scores) / len(scores)), evidence
+                evidence.append(f"irrelevant_role:{role}")
+                return 0.05, evidence
+
+        # JD-specific role matching
+        for role in target_roles:
+            if role in text_blob:
+                evidence.append(f"matched_target_role:{role}")
+                return 1.0, evidence
+
+        # Partial matches
+        partial_roles = [
+            "software engineer",
+            "backend engineer",
+            "machine learning engineer",
+            "ai engineer",
+            "data engineer",
+            "python developer",
+        ]
+
+        for role in partial_roles:
+            if role in text_blob:
+                evidence.append(f"related_role:{role}")
+                return 0.75, evidence
+
+        return 0.25, evidence
 
     def _retrieval_experience(self, text_blob: str) -> tuple[float, List[str]]:
         evidence = [f"retrieval: {term}" for term in RETRIEVAL_TECH_TERMS if term in text_blob]

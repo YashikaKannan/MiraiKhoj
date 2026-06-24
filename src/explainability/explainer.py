@@ -3,42 +3,87 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from ranking.ai_ranker import RankedCandidate
 
 
 @dataclass(slots=True)
 class CandidateExplainer:
-    """Turn score breakdowns into recruiter-friendly reasons."""
+    """Generate recruiter-friendly candidate explanations."""
 
     def explain(self, ranked_candidate: RankedCandidate) -> str:
-        """Create a concise explanation for a ranked candidate."""
-
-        reasons: List[str] = []
-
+        
         candidate = ranked_candidate.candidate_payload
 
-        years = candidate.get("years_of_experience")
-        title = candidate.get("current_title")
+        if "llm_reason" in candidate:
+            reason = candidate.get("llm_reason", "")
+
+            strengths = candidate.get("strengths", [])
+            risks = candidate.get("risks", [])
+
+            parts = [reason]
+
+            if strengths:
+                parts.append("Strengths: " + ", ".join(strengths))
+
+            if risks:
+                parts.append("Risks: " + ", ".join(risks))
+
+            return " ".join(parts)
+
+        reasons = []
+
+        years = float(candidate.get("years_of_experience", 0))
+        title = candidate.get("current_title") or ""
+        title_lower = title.lower()
         company = candidate.get("current_company")
-        if years:
-            reasons.append(
-                f"{years} years of relevant experience."
-            )
 
-        if title and company:
-            reasons.append(
-                f"Currently working as {title} at {company}."
-            )
+        # ----------------------------------------------------
+        # Experience
+        # ----------------------------------------------------
+
+        if years > 0:
+
+            if company:
+                reasons.append(
+                    f"{years:.1f} years of experience as {title} at {company}."
+                )
+            else:
+                reasons.append(
+                    f"{years:.1f} years of experience as {title}."
+                )
+
+        # ----------------------------------------------------
+        # Skills
+        # ----------------------------------------------------
+
         if ranked_candidate.matched_skills:
-            reasons.append(
-                f"Matched {len(ranked_candidate.matched_skills)} JD skills including "
-                f"{', '.join(ranked_candidate.matched_skills[:5])}."
-            )
 
+            skills = ", ".join(ranked_candidate.matched_skills[:4])
 
-        retrieval_tools = []
+            # reasons.append(
+            #     f"Matched {len(ranked_candidate.matched_skills)} key JD skills including {skills}."
+            # )
+            if len(ranked_candidate.matched_skills) >= 8:
+                reasons.append(
+                    f"Matches {len(ranked_candidate.matched_skills)} of the required technical capabilities, including {skills}."
+                )
+            elif len(ranked_candidate.matched_skills) >= 5:
+                reasons.append(
+                    f"Covers most of the required engineering stack, including {skills}."
+                )
+            else:
+                reasons.append(
+                    f"Relevant technical experience includes {skills}."
+                )
+
+        # ----------------------------------------------------
+        # Retrieval technologies
+        # ----------------------------------------------------
+
+        evidence = " ".join(ranked_candidate.evidence).lower()
+
+        tools = []
 
         for tool in [
             "faiss",
@@ -46,42 +91,169 @@ class CandidateExplainer:
             "opensearch",
             "qdrant",
             "weaviate",
-            "milvus",
             "pinecone",
+            "milvus",
             "vector search",
         ]:
-            if tool in ranked_candidate.evidence:
-                retrieval_tools.append(tool.upper())
 
-        if retrieval_tools:
+            if tool in evidence:
+                tools.append(tool.upper())
+
+        if tools:
+
             reasons.append(
-                f"Hands-on experience with {', '.join(retrieval_tools[:4])}."
+                f"Hands-on experience with {', '.join(tools[:3])}."
             )
 
-        if ranked_candidate.semantic_score >= 0.75:
-            reasons.append("High semantic match with the job description.")
-        elif ranked_candidate.semantic_score >= 0.55:
-            reasons.append("Relevant semantic overlap with the role requirements.")
+        # ----------------------------------------------------
+        # Role-specific reasoning
+        # ----------------------------------------------------
+
+        if "search engineer" in title_lower:
+
+            reasons.append(
+                "Built production search and retrieval systems closely aligned with the role's ranking responsibilities."
+            )
+
+        elif "recommendation" in title_lower:
+
+            reasons.append(
+                "Recommendation system experience indicates strong relevance and ranking expertise."
+            )
+
+        elif "nlp" in title_lower:
+
+            reasons.append(
+                "Strong NLP background aligns well with semantic search and embedding-based retrieval."
+            )
+
+        elif "machine learning" in title_lower or "ml engineer" in title_lower:
+
+            reasons.append(
+                "Production machine learning experience supports deployment of intelligent retrieval systems."
+            )
+
+        elif "ai engineer" in title_lower:
+
+            reasons.append(
+                "Hands-on AI engineering experience matches the production-focused expectations of the role."
+            )
+
+        # ----------------------------------------------------
+        # Career
+        # ----------------------------------------------------
 
         if ranked_candidate.career_score >= 0.70:
-            reasons.append("Strong career alignment with the target role.")
 
-        if ranked_candidate.retrieval_expertise_score >= 0.55:
-            reasons.append("Strong retrieval and ranking expertise.")
+            reasons.append(
+                "Career progression closely matches the senior AI engineering profile."
+            )
 
-        if ranked_candidate.behavioral_score >= 0.55:
-            reasons.append("Positive recruitability and engagement signals.")
+        elif ranked_candidate.career_score >= 0.55:
 
-        if ranked_candidate.credibility_score >= 0.60:
-            reasons.append("Profile credibility and completeness look solid.")
+            reasons.append(
+                "Career history demonstrates consistent growth in relevant engineering roles."
+            )
 
-        if ranked_candidate.logistics_score >= 0.55:
-            reasons.append("Good logistics fit for availability or location constraints.")
+        # ----------------------------------------------------
+        # Semantic
+        # ----------------------------------------------------
 
-        if ranked_candidate.trap_penalty > 0.0:
-            reasons.append("Suspicious profile signals were detected and penalized.")
+        if ranked_candidate.semantic_score >= 0.85:
 
-        if not reasons:
-            reasons.append("Candidate is a moderate match with limited supporting evidence.")
+            reasons.append(
+                "Excellent semantic alignment with the job description."
+            )
 
+        elif ranked_candidate.semantic_score >= 0.70:
+
+            reasons.append(
+                "Strong semantic similarity to the required responsibilities."
+            )
+
+        # ----------------------------------------------------
+        # Retrieval expertise
+        # ----------------------------------------------------
+
+        if ranked_candidate.retrieval_expertise_score >= 0.90:
+
+            reasons.append(
+                "Demonstrates extensive production experience with retrieval and vector search technologies."
+            )
+
+        elif ranked_candidate.retrieval_expertise_score >= 0.70:
+
+            reasons.append(
+                "Good practical exposure to modern retrieval infrastructure."
+            )
+
+        # ----------------------------------------------------
+        # Behaviour
+        # ----------------------------------------------------
+
+        if ranked_candidate.behavioral_score >= 0.70:
+
+            reasons.append(
+                "Behavioral signals indicate strong hiring readiness."
+            )
+
+        elif ranked_candidate.behavioral_score >= 0.50:
+
+            reasons.append(
+                "Behavioral profile is consistent with an active candidate."
+            )
+
+        else:
+
+            reasons.append(
+                "Behavioral signals should be validated during interview."
+            )
+
+        # ----------------------------------------------------
+        # Credibility
+        # ----------------------------------------------------
+
+        if ranked_candidate.credibility_score >= 0.70:
+
+            reasons.append(
+                "Profile demonstrates strong credibility with consistent career information."
+            )
+
+        elif ranked_candidate.credibility_score >= 0.55:
+
+            reasons.append(
+                "Profile information is sufficiently complete for evaluation."
+            )
+
+        # ----------------------------------------------------
+        # Logistics
+        # ----------------------------------------------------
+
+        if ranked_candidate.logistics_score >= 0.60:
+
+            reasons.append(
+                "Availability and logistics are favorable for hiring."
+            )
+
+        # ----------------------------------------------------
+        # Trap detector
+        # ----------------------------------------------------
+
+        if ranked_candidate.trap_penalty >= 0.05:
+
+            reasons.append(
+                "Minor profile inconsistencies slightly reduced the final ranking."
+            )
+
+        # ----------------------------------------------------
+        # Fallback
+        # ----------------------------------------------------
+
+        if len(reasons) < 3:
+
+            reasons.append(
+                "Overall profile demonstrates a solid match for the role."
+            )
+        #  Remove duplicate sentences while preserving order
+        reasons = list(dict.fromkeys(reasons))
         return " ".join(reasons)

@@ -145,6 +145,12 @@ def build_processed_candidate_row(record: Mapping[str, Any]) -> Dict[str, Any]:
     years_of_experience = profile.get("years_of_experience")
     if not isinstance(years_of_experience, (int, float)):
         years_of_experience = None
+    skill_names = []
+
+    for skill in skills:
+        name = _coerce_text(skill.get("name"))
+        if name:
+            skill_names.append(name)
 
     return {
         "candidate_id": _coerce_text(record.get("candidate_id")),
@@ -155,6 +161,7 @@ def build_processed_candidate_row(record: Mapping[str, Any]) -> Dict[str, Any]:
         "skill_count": len(skills),
         "certification_count": len(certifications),
         "language_count": len(languages),
+        "candidate_skills": ", ".join(skill_names),
     }
 
 

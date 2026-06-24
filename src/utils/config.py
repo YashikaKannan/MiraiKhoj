@@ -14,41 +14,99 @@ PRIMARY_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 FALLBACK_EMBEDDING_MODEL = "intfloat/e5-large-v2"
 
 SKILL_LEXICON: Set[str] = {
+
+    # Languages
     "python",
+    "java",
+    "go",
+    "c++",
+
+    # Backend
+    "fastapi",
+    "django",
+    "flask",
+    "spring boot",
+    "rest api",
+    "graphql",
+
+    # Databases
     "sql",
-    "pytorch",
-    "tensorflow",
-    "faiss",
-    "elasticsearch",
-    "opensearch",
-    "qdrant",
-    "milvus",
-    "pinecone",
-    "weaviate",
+    "postgresql",
+    "mysql",
+    "mongodb",
+    "redis",
+
+    # Cloud
+    "aws",
+    "gcp",
+    "azure",
+
+    # Containers
+    "docker",
+    "kubernetes",
+    "helm",
+
+    # Messaging
+    "kafka",
+    "rabbitmq",
+
+    # DevOps
+    "linux",
+    "ci/cd",
+    "jenkins",
+    "github actions",
+
+    # AI / ML
+    "machine learning",
+    "deep learning",
+    "nlp",
+    "llm",
+    "transformers",
+    "sentence transformers",
+    "hugging face",
+    "embedding",
+    "embeddings",
+    "semantic search",
+    "information retrieval",
     "retrieval",
     "ranking",
+    "candidate ranking",
     "recommendation",
     "search",
     "matching",
-    "nlp",
-    "llm",
-    "vector database",
+
+    # Vector DB
+    "faiss",
+    "pinecone",
+    "qdrant",
+    "milvus",
+    "weaviate",
+    "elasticsearch",
+    "opensearch",
     "vector search",
-    "machine learning",
-    "deep learning",
-    "information retrieval",
-    "learning to rank",
+    "vector database",
+    "dense retrieval",
+    "sparse retrieval",
+    "hnsw",
+
+    # LLM Fine-tuning
+    "lora",
+    "qlora",
+    "peft",
+
+    # Evaluation
     "ndcg",
     "mrr",
     "map",
     "ab testing",
+    "learning to rank",
     "feature engineering",
-    "candidate ranking",
-    "semantic search",
-    "embedding",
-    "dense retrieval",
-    "sparse retrieval",
-    "hnsw",
+
+    # Frameworks
+    "langchain",
+    "llamaindex",
+    "crewai",
+    "autogen",
 }
 
 ROLE_KEYWORDS: Dict[str, float] = {

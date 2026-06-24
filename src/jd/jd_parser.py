@@ -24,6 +24,8 @@ class ParsedJD:
     role_seniority: str = ""
     domain_keywords: List[str] = field(default_factory=list)
     evaluation_metrics: List[str] = field(default_factory=list)
+    target_roles: List[str] = field(default_factory=list)
+
     raw_text: str = ""
 
     def to_dict(self) -> Dict[str, object]:
@@ -58,6 +60,7 @@ class JDParser:
         role_seniority = self._extract_seniority(cleaned)
         domain_keywords = self._extract_domain_keywords(cleaned)
         evaluation_metrics = self._extract_metrics(cleaned)
+        target_roles = self._extract_target_roles(cleaned)
 
         return ParsedJD(
             required_skills=required_skills,
@@ -67,6 +70,7 @@ class JDParser:
             role_seniority=role_seniority,
             domain_keywords=domain_keywords,
             evaluation_metrics=evaluation_metrics,
+            target_roles=target_roles,
             raw_text=cleaned,
         )
 
@@ -163,6 +167,60 @@ class JDParser:
     def _extract_metrics(self, text: str) -> List[str]:
         lowered = text.lower()
         return self._unique([metric for metric in EVALUATION_METRICS if metric in lowered])
+    
+    def _extract_target_roles(self, text: str) -> List[str]:
+        """
+        Extract the primary job roles from the JD.
+        """
+
+        lowered = text.lower()
+
+        ROLE_MAP = {
+            "ai engineer": [
+                "ai engineer",
+                "machine learning engineer",
+                "ml engineer",
+                "search engineer",
+                "recommendation engineer",
+                "nlp engineer",
+                "information retrieval engineer",
+                "applied scientist",
+            ],
+
+            "backend engineer": [
+                "backend engineer",
+                "software engineer",
+                "python developer",
+                "platform engineer",
+                "backend developer",
+            ],
+
+            "frontend engineer": [
+                "frontend engineer",
+                "frontend developer",
+                "ui engineer",
+                "react developer",
+            ],
+
+            "data engineer": [
+                "data engineer",
+                "etl engineer",
+                "analytics engineer",
+                "big data engineer",
+            ],
+
+            "data scientist": [
+                "data scientist",
+                "machine learning scientist",
+                "research scientist",
+            ],
+        }
+
+        for key, roles in ROLE_MAP.items():
+            if key in lowered:
+                return roles
+
+        return []
 
     def _unique(self, values: Iterable[str]) -> List[str]:
         seen = set()

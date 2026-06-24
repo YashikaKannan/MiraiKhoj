@@ -250,115 +250,115 @@ def validate_candidate_schema(record: Mapping[str, Any]) -> List[str]:
     return errors
 
 
-def build_candidate_text(record: Mapping[str, Any]) -> str:
-    """Build the canonical candidate text using only actual dataset fields."""
+# def build_candidate_text(record: Mapping[str, Any]) -> str:
+#     """Build the canonical candidate text using only actual dataset fields."""
 
-    profile = _ensure_mapping(record.get("profile", {}))
-    sections: List[str] = []
+#     profile = _ensure_mapping(record.get("profile", {}))
+#     sections: List[str] = []
 
-    headline = _coerce_text(profile.get("headline"))
-    summary = _coerce_text(profile.get("summary"))
-    current_title = _coerce_text(profile.get("current_title"))
-    current_company = _coerce_text(profile.get("current_company"))
-    current_industry = _coerce_text(profile.get("current_industry"))
-    location = _coerce_text(profile.get("location"))
-    country = _coerce_text(profile.get("country"))
-    years_of_experience = _coerce_text(profile.get("years_of_experience"))
+#     headline = _coerce_text(profile.get("headline"))
+#     summary = _coerce_text(profile.get("summary"))
+#     current_title = _coerce_text(profile.get("current_title"))
+#     current_company = _coerce_text(profile.get("current_company"))
+#     current_industry = _coerce_text(profile.get("current_industry"))
+#     location = _coerce_text(profile.get("location"))
+#     country = _coerce_text(profile.get("country"))
+#     years_of_experience = _coerce_text(profile.get("years_of_experience"))
 
-    if headline:
-        sections.append(f"Headline: {headline}")
-    if summary:
-        sections.append(f"Summary: {summary}")
-    if current_title or current_company:
-        sections.append(f"Current Role: {current_title} at {current_company}".strip())
-    if current_industry:
-        sections.append(f"Current Industry: {current_industry}")
-    if location or country:
-        location_text = ", ".join(part for part in [location, country] if part)
-        if location_text:
-            sections.append(f"Location: {location_text}")
-    if years_of_experience:
-        sections.append(f"Years of Experience: {years_of_experience}")
+#     if headline:
+#         sections.append(f"Headline: {headline}")
+#     if summary:
+#         sections.append(f"Summary: {summary}")
+#     if current_title or current_company:
+#         sections.append(f"Current Role: {current_title} at {current_company}".strip())
+#     if current_industry:
+#         sections.append(f"Current Industry: {current_industry}")
+#     if location or country:
+#         location_text = ", ".join(part for part in [location, country] if part)
+#         if location_text:
+#             sections.append(f"Location: {location_text}")
+#     if years_of_experience:
+#         sections.append(f"Years of Experience: {years_of_experience}")
 
-    career_history = _ensure_list(record.get("career_history"), "career_history")
-    if career_history:
-        formatted_history: List[str] = []
-        for entry in career_history:
-            parts = [
-                _coerce_text(entry.get("title")),
-                _coerce_text(entry.get("company")),
-                _coerce_text(entry.get("industry")),
-                _coerce_text(entry.get("description")),
-            ]
-            parts = [part for part in parts if part]
-            if parts:
-                formatted_history.append("; ".join(parts))
-        if formatted_history:
-            sections.append("Career History: " + " | ".join(formatted_history))
+#     career_history = _ensure_list(record.get("career_history"), "career_history")
+#     if career_history:
+#         formatted_history: List[str] = []
+#         for entry in career_history:
+#             parts = [
+#                 _coerce_text(entry.get("title")),
+#                 _coerce_text(entry.get("company")),
+#                 _coerce_text(entry.get("industry")),
+#                 _coerce_text(entry.get("description")),
+#             ]
+#             parts = [part for part in parts if part]
+#             if parts:
+#                 formatted_history.append("; ".join(parts))
+#         if formatted_history:
+#             sections.append("Career History: " + " | ".join(formatted_history))
 
-    education = _ensure_list(record.get("education"), "education")
-    if education:
-        formatted_education: List[str] = []
-        for entry in education:
-            parts = [
-                _coerce_text(entry.get("institution")),
-                _coerce_text(entry.get("degree")),
-                _coerce_text(entry.get("field_of_study")),
-                _coerce_text(entry.get("grade")),
-                _coerce_text(entry.get("tier")),
-            ]
-            parts = [part for part in parts if part]
-            if parts:
-                formatted_education.append("; ".join(parts))
-        if formatted_education:
-            sections.append("Education: " + " | ".join(formatted_education))
+#     education = _ensure_list(record.get("education"), "education")
+#     if education:
+#         formatted_education: List[str] = []
+#         for entry in education:
+#             parts = [
+#                 _coerce_text(entry.get("institution")),
+#                 _coerce_text(entry.get("degree")),
+#                 _coerce_text(entry.get("field_of_study")),
+#                 _coerce_text(entry.get("grade")),
+#                 _coerce_text(entry.get("tier")),
+#             ]
+#             parts = [part for part in parts if part]
+#             if parts:
+#                 formatted_education.append("; ".join(parts))
+#         if formatted_education:
+#             sections.append("Education: " + " | ".join(formatted_education))
 
-    skills = _ensure_list(record.get("skills"), "skills")
-    if skills:
-        formatted_skills: List[str] = []
-        for entry in skills:
-            parts = [
-                _coerce_text(entry.get("name")),
-                _coerce_text(entry.get("proficiency")),
-                _coerce_text(entry.get("endorsements")),
-                _coerce_text(entry.get("duration_months")),
-            ]
-            parts = [part for part in parts if part]
-            if parts:
-                formatted_skills.append("; ".join(parts))
-        if formatted_skills:
-            sections.append("Skills: " + " | ".join(formatted_skills))
+#     skills = _ensure_list(record.get("skills"), "skills")
+#     if skills:
+#         formatted_skills: List[str] = []
+#         for entry in skills:
+#             parts = [
+#                 _coerce_text(entry.get("name")),
+#                 _coerce_text(entry.get("proficiency")),
+#                 _coerce_text(entry.get("endorsements")),
+#                 _coerce_text(entry.get("duration_months")),
+#             ]
+#             parts = [part for part in parts if part]
+#             if parts:
+#                 formatted_skills.append("; ".join(parts))
+#         if formatted_skills:
+#             sections.append("Skills: " + " | ".join(formatted_skills))
 
-    certifications_value = record.get("certifications")
-    if isinstance(certifications_value, list) and certifications_value:
-        formatted_certs: List[str] = []
-        for entry in _ensure_list(certifications_value, "certifications"):
-            parts = [
-                _coerce_text(entry.get("name")),
-                _coerce_text(entry.get("issuer")),
-                _coerce_text(entry.get("year")),
-            ]
-            parts = [part for part in parts if part]
-            if parts:
-                formatted_certs.append("; ".join(parts))
-        if formatted_certs:
-            sections.append("Certifications: " + " | ".join(formatted_certs))
+#     certifications_value = record.get("certifications")
+#     if isinstance(certifications_value, list) and certifications_value:
+#         formatted_certs: List[str] = []
+#         for entry in _ensure_list(certifications_value, "certifications"):
+#             parts = [
+#                 _coerce_text(entry.get("name")),
+#                 _coerce_text(entry.get("issuer")),
+#                 _coerce_text(entry.get("year")),
+#             ]
+#             parts = [part for part in parts if part]
+#             if parts:
+#                 formatted_certs.append("; ".join(parts))
+#         if formatted_certs:
+#             sections.append("Certifications: " + " | ".join(formatted_certs))
 
-    languages_value = record.get("languages")
-    if isinstance(languages_value, list) and languages_value:
-        formatted_languages: List[str] = []
-        for entry in _ensure_list(languages_value, "languages"):
-            parts = [
-                _coerce_text(entry.get("language")),
-                _coerce_text(entry.get("proficiency")),
-            ]
-            parts = [part for part in parts if part]
-            if parts:
-                formatted_languages.append("; ".join(parts))
-        if formatted_languages:
-            sections.append("Languages: " + " | ".join(formatted_languages))
+#     languages_value = record.get("languages")
+#     if isinstance(languages_value, list) and languages_value:
+#         formatted_languages: List[str] = []
+#         for entry in _ensure_list(languages_value, "languages"):
+#             parts = [
+#                 _coerce_text(entry.get("language")),
+#                 _coerce_text(entry.get("proficiency")),
+#             ]
+#             parts = [part for part in parts if part]
+#             if parts:
+#                 formatted_languages.append("; ".join(parts))
+#         if formatted_languages:
+#             sections.append("Languages: " + " | ".join(formatted_languages))
 
-    return "\n".join(section for section in sections if section).strip()
+#     return "\n".join(section for section in sections if section).strip()
 
 
 def iter_candidate_records(source_path: str | Path) -> Iterator[CandidateRecord]:

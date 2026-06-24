@@ -14,7 +14,9 @@ sys.path.append(str(PROJECT_ROOT / "src"))
 
 import numpy as np
 import pandas as pd
+from docx import Document
 
+from llm.gemini_reasoner import GeminiReasoner
 from career.career_analyzer import CareerAnalyzer
 from career.retrieval_expertise import RetrievalExpertiseDetector
 from behavior.signal_engine import BehavioralSignalEngine
@@ -31,13 +33,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger(__name__)
 
 
-def run(jd_text: str, top_k: int = 20) -> dict:
+def run(jd_text: str, top_k: int = 100) -> dict:
     cfg = PathConfig()
     pipeline_cfg = PipelineConfig()
     jd_parser = JDParser()
     parsed_jd = jd_parser.parse(jd_text)
 
-    df = pd.read_csv("data/processed/relevant_candidates.csv")
+    df = pd.read_csv("data/processed/processed_candidates.csv")
     
     emb = np.load(cfg.candidate_embeddings, mmap_mode="r")
     print("Candidates:", len(df))
@@ -51,6 +53,47 @@ def run(jd_text: str, top_k: int = 20) -> dict:
 
     candidate_lookup = df.set_index("candidate_id").to_dict(orient="index")
     candidate_embeddings = {cid: emb[idx] for idx, cid in enumerate(df["candidate_id"].astype(str).tolist())}
+    filtered_hits = []
+
+    for hit in hits:
+        candidate = candidate_lookup.get(hit.candidate_id)
+
+        if candidate is None:
+            continue
+
+        title = str(candidate.get("current_title", "")).lower()
+
+        # keep if title matches any target role
+        if any(role in title for role in parsed_jd.target_roles):
+            filtered_hits.append(hit)
+            continue
+
+        # also keep generic engineering titles
+        if any(x in title for x in [
+            "software engineer",
+            "backend engineer",
+            "full stack engineer",
+            "platform engineer",
+            "engineer",
+            "developer",
+        ]):
+           filtered_hits.append(hit)
+
+    hits = filtered_hits
+
+    print("=" * 100)
+
+    for h in hits[:20]:
+        c = candidate_lookup[h.candidate_id]
+        print(
+            h.candidate_id,
+            c["current_title"],
+            c["current_company"],
+            h.score,
+        )
+
+    print("=" * 100)
+    
 
     career = CareerAnalyzer()
     retrieval_exp = RetrievalExpertiseDetector()
@@ -59,6 +102,7 @@ def run(jd_text: str, top_k: int = 20) -> dict:
     semantic = SemanticRanker()
     final_ranker = FinalRanker()
     explainer = CandidateExplainer()
+    gemini = GeminiReasoner()
 
     bundles: List[CandidateScoreBundle] = []
     for hit in hits:
@@ -66,6 +110,9 @@ def run(jd_text: str, top_k: int = 20) -> dict:
         if not candidate:
             continue
         cand_payload = dict(candidate)
+        # print("=" * 80)
+        # print(cand_payload)
+        # break
         sem = semantic.score(jd_emb, candidate_embeddings[hit.candidate_id])
         matched_skills = []
 
@@ -77,7 +124,7 @@ def run(jd_text: str, top_k: int = 20) -> dict:
             parsed_jd.required_skills,
             cand_payload["candidate_text"]
         )
-        career_analysis = career.analyze(cand_payload)
+        career_analysis = career.analyze(cand_payload, parsed_jd.target_roles,)
         retr_analysis = retrieval_exp.analyze(cand_payload)
         beh = behavior.analyze(cand_payload)
         
@@ -98,8 +145,8 @@ def run(jd_text: str, top_k: int = 20) -> dict:
             CandidateScoreBundle(
                 candidate_id=hit.candidate_id,
                 semantic_score=(
-                    0.80 * sem +
-                    0.20 * skill_score
+                    0.65 * sem +
+                    0.35 * skill_score
                 ),
                 career_score=career_analysis.career_score,
                 retrieval_expertise_score=retr_analysis.retrieval_expertise_score,
@@ -114,7 +161,84 @@ def run(jd_text: str, top_k: int = 20) -> dict:
             )
         )
 
-    ranked = final_ranker.rank(bundles)[:top_k]
+    # ranked = final_ranker.rank(bundles)[:top_k]
+    ranked = final_ranker.rank(bundles)
+
+    
+    # ----------------------------
+    # LLM Re-ranking (Batch Mode)
+    # ----------------------------
+
+    top_candidates = ranked[:20]
+
+    batch_size = 5
+
+    for i in range(0, len(top_candidates), batch_size):
+
+        batch = top_candidates[i:i + batch_size]
+
+        payload = []
+
+        for c in batch:
+            payload.append({
+                "candidate_id": c.candidate_id,
+                "current_title": c.candidate_payload.get("current_title"),
+                "current_company": c.candidate_payload.get("current_company"),
+                "years_of_experience": c.candidate_payload.get("years_of_experience"),
+                "candidate_text": c.candidate_payload.get("candidate_text"),
+                "current_score": round(c.final_score, 3)
+            })
+
+        results = gemini.evaluate_batch(jd_text, payload)
+
+        result_lookup = {
+            r["candidate_id"]: r
+            for r in results
+        }
+
+        for c in batch:
+
+            if c.candidate_id not in result_lookup:
+                continue
+
+            llm = result_lookup[c.candidate_id]
+
+            llm_score = llm["fit_score"] / 100
+
+            recommendation_bonus = {
+                "Strong Yes": 0.05,
+                "Yes": 0.03,
+                "Maybe": 0.00,
+                "No": -0.03,
+                "Strong No": -0.05,
+            }
+
+            bonus = recommendation_bonus.get(
+                llm.get("interview_recommendation", "Maybe"),
+                0.0,
+            )
+
+            c.final_score = min(
+                1.0,
+                0.80 * c.final_score +
+                0.20 * llm_score +
+                bonus,
+            )
+            if "reason" in llm:
+                c.candidate_payload["llm_reason"] = llm["reason"]
+            if "strengths" in llm:
+                c.candidate_payload["strengths"] = llm.get("strengths", [])
+            if "risks" in llm:
+                c.candidate_payload["risks"] = llm.get("risks", [])
+
+           
+
+        # Final sort
+        ranked = sorted(
+            top_candidates + ranked[20:],
+            key=lambda x: x.final_score,
+            reverse=True,
+        )[:top_k]
 
     rows = []
     for rank, r in enumerate(ranked, start=1):
@@ -151,9 +275,16 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--jd", required=True, help="Path to a JD text file")
-    parser.add_argument("--top-k", type=int, default=20)
+    parser.add_argument("--top-k", type=int, default=100)
     args = parser.parse_args()
-    jd_text = Path(args.jd).read_text(encoding="utf-8")
+
+    jd_path = Path(args.jd)
+
+    if jd_path.suffix == ".docx":
+        doc = Document(jd_path)
+        jd_text = "\n".join(p.text for p in doc.paragraphs)
+    else:
+        jd_text = Path(args.jd).read_text(encoding="utf-8")
     
     parser = JDParser()
     parsed_jd = parser.parse(jd_text)

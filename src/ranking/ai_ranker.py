@@ -106,6 +106,43 @@ class FinalRanker:
             + self.weights.logistics * bundle.logistics_score
             - bundle.trap_penalty
         )
+
+        title = str(
+            bundle.candidate_payload.get("current_title", "")
+        ).lower()
+
+        # Roles that strongly match this JD
+        strong_roles = [
+            "search engineer",
+            "ai engineer",
+            "machine learning engineer",
+            "ml engineer",
+            "nlp engineer",
+            "information retrieval engineer",
+            "recommendation engineer",
+            "applied scientist",
+        ]
+
+        # Roles explicitly discouraged by the JD
+        irrelevant_roles = [
+            "marketing",
+            "operations manager",
+            "hr manager",
+            "customer support",
+            "mechanical engineer",
+            "civil engineer",
+            "sales",
+            "accountant",
+        ]
+
+        # Reward good AI/Search careers
+        if any(role in title for role in strong_roles):
+            final_score += 0.08
+
+        # Penalize clearly unrelated careers
+        if any(role in title for role in irrelevant_roles):
+            final_score -= 0.20
+
         return max(0.0, min(1.0, final_score))
 
     def rank(self, bundles: Sequence[CandidateScoreBundle]) -> List[RankedCandidate]:

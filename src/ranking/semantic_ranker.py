@@ -24,11 +24,44 @@ class SemanticRanker:
             return 0.0
         cosine = numerator / denominator
         return max(0.0, min(1.0, (cosine + 1.0) / 2.0))
-    def skill_match_score(self, jd_skills: list[str], candidate_text: str,) -> float:
-        matched = 0
+    def skill_match_score(self, required_skills: list[str], candidate_text: str,) -> float:
 
-        for skill in jd_skills:
-            if skill.lower() in candidate_text.lower():
-                matched += 1
+        candidate_text = candidate_text.lower()
 
-        return matched / max(len(jd_skills), 1)
+        HIGH_WEIGHT = {
+            "embedding",
+            "embeddings",
+            "retrieval",
+            "ranking",
+            "faiss",
+            "pinecone",
+            "qdrant",
+            "milvus",
+            "weaviate",
+            "vector search",
+            "vector database",
+            "recommendation",
+            "information retrieval",
+            "learning to rank",
+            "ndcg",
+            "mrr",
+            "map",
+            "llm",
+        }
+
+        score = 0.0
+        max_score = 0.0
+
+        for skill in required_skills:
+
+            weight = 3.0 if skill in HIGH_WEIGHT else 1.5
+
+            max_score += weight
+
+            if skill.lower() in candidate_text:
+                score += weight
+
+        if max_score == 0:
+            return 0.0
+
+        return score / max_score

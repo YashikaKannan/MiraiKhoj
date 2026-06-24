@@ -175,7 +175,7 @@ const MOCK_ANALYTICS: AnalyticsResponse = {
 async function tryFetch<T>(url: string, init?: RequestInit): Promise<T | null> {
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 2500);
+    const timer = setTimeout(() => ctrl.abort(), 40000);
     const res = await fetch(url, { ...init, signal: ctrl.signal });
     clearTimeout(timer);
     if (!res.ok) return null;

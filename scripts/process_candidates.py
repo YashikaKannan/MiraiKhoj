@@ -49,12 +49,16 @@ def main() -> None:
             failed += 1
 
     proc_df = pd.DataFrame.from_records(processed_rows)
-    try:
-        proc_df.to_parquet(processed_path, index=False)
-    except Exception:
-        csv_path = processed_path.with_suffix('.csv')
-        proc_df.to_csv(csv_path, index=False)
-        logger.warning("pyarrow/fastparquet not available; wrote CSV to %s", csv_path)
+    # try:
+    #     proc_df.to_parquet(processed_path, index=False)
+    # except Exception:
+    #     csv_path = processed_path.with_suffix('.csv')
+    #     proc_df.to_csv(csv_path, index=False)
+    #     logger.warning("pyarrow/fastparquet not available; wrote CSV to %s", csv_path)
+
+    # Save as CSV
+    proc_df.to_csv(processed_path, index=False)
+    
     duration = time.time() - start
 
     report = {

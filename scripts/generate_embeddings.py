@@ -37,7 +37,7 @@ def generate_embeddings(
     processed_path = (
     Path(processed_path)
     if processed_path
-    else cfg.paths.processed_dir / "relevant_candidates.csv")
+    else cfg.paths.processed_dir / "processed_candidates.csv")
     out_path = Path(out_path) if out_path else cfg.paths.candidate_embeddings
 
     df = _load_candidates(processed_path)
