@@ -15,7 +15,7 @@ class CandidateExplainer:
         
         candidate = ranked_candidate.candidate_payload
 
-        if "llm_reason" in candidate:
+        if ("llm_reason" in candidate and candidate["llm_reason"] not in ["LLM evaluation failed.", "LLM unavailable. Used deterministic AI ranking."]):
             reason = candidate.get("llm_reason", "")
 
             strengths = candidate.get("strengths", [])

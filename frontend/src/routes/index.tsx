@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { FileText } from "lucide-react";
 import {
   ArrowRight,
   BarChart3,
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/")({
 });
 
 const PIPELINE = [
-  { icon: Sparkles, label: "Job Description" },
+  { icon: FileText, label: "Job Description" },
   { icon: Database, label: "FAISS Retrieval" },
   { icon: Brain, label: "Career Intelligence" },
   { icon: TrendingUp, label: "Behavioral Signals" },
@@ -63,11 +64,11 @@ function Dashboard() {
       <main className="mx-auto max-w-7xl px-6 py-12">
         {/* Hero */}
         <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-sky-50/40 to-white p-10 shadow-sm">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">
+          {/* <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">
             <Sparkles className="h-3.5 w-3.5" /> Redrob Data &amp; AI Challenge
-          </div>
+          </div> */}
           <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            MiraiKhoj — <span className="text-primary">Finding Talent Beyond Keywords</span>
+            MiraiKhoj - <span className="text-primary">Finding Talent Beyond Keywords</span>
           </h1>
           <p className="mt-4 max-w-2xl text-base text-slate-600 sm:text-lg">
             Explainable AI candidate discovery using semantic search, behavioral intelligence,
@@ -124,7 +125,7 @@ function Dashboard() {
               <h3 className="text-lg font-semibold text-slate-900">Beyond keyword matching</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 MiraiKhoj does not only match keywords. It checks career evidence, behavioral quality,
-                credibility, and suspicious profile patterns — so every shortlisted candidate has signals
+                credibility, and suspicious profile patterns - so every shortlisted candidate has signals
                 a recruiter can actually trust.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">

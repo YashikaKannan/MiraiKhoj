@@ -27,7 +27,7 @@ def rank(request: RankRequest):
 def analytics():
 
     return {
-        "total_candidates": 6093,
+        "total_candidates": 100000,
         "ranked_candidates": 100,
         "average_score": 0.76,
         "average_trap_penalty": 0.02,

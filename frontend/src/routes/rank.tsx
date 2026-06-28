@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, Download, Info, Loader2, ServerCog, Sparkles, XCircle } from "lucide-react";
 import { Navbar } from "@/components/mirai/Navbar";
@@ -47,11 +47,29 @@ function RankPage() {
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [usedMock, setUsedMock] = useState(false);
 
+  useEffect(() => {
+  const saved = sessionStorage.getItem("rank_results");
+
+  if (saved) {
+    const parsed = JSON.parse(saved);
+
+    setCandidates(parsed.candidates);
+    setUsedMock(parsed.usedMock);
+  }
+}, []);
+
   async function handleRank() {
     setLoading(true);
     const res = await rankCandidates(jd);
     setCandidates(res.top_candidates);
     setUsedMock(Boolean(res.usedMock));
+    sessionStorage.setItem(
+      "rank_results",
+      JSON.stringify({
+        candidates: res.top_candidates,
+        usedMock: Boolean(res.usedMock),
+      })
+    );
     setLoading(false);
   }
 

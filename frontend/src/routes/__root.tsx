@@ -74,25 +74,48 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
+  meta: [
+    { charSet: "utf-8" },
+    { name: "viewport", content: "width=device-width, initial-scale=1" },
+
+    { title: "MiraiKhoj - Finding Talent Beyond Keywords" },
+
+    {
+      name: "description",
+      content:
+        "AI-powered candidate discovery using semantic search, behavioral intelligence, and explainable ranking.",
+    },
+
+    { name: "author", content: "MiraiKhoj Team" },
+
+    {
+      property: "og:title",
+      content: "MiraiKhoj - Finding Talent Beyond Keywords",
+    },
+
+    {
+      property: "og:description",
+      content:
+        "Explainable AI candidate discovery using semantic search and behavioral intelligence.",
+    },
+
+    { property: "og:type", content: "website" },
+
+    { name: "twitter:card", content: "summary_large_image" },
+  ],
+
+  links: [
+    {
+      rel: "stylesheet",
+      href: appCss,
+    },
+
+    {
+      rel: "icon",
+      href: "/favicon.png",
+    },
+  ],
+}),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -123,3 +146,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
