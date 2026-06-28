@@ -1,5 +1,6 @@
 # 🚀 MiraiKhoj - Intelligent Candidate Discovery System
 
+
 ## Overview
 
 MiraiKhoj is an AI-powered candidate discovery and ranking platform designed to identify the most relevant candidates for a given Job Description (JD).
@@ -32,6 +33,73 @@ Traditional ATS systems rely heavily on keyword matching, which results in:
 MiraiKhoj solves this by combining semantic understanding, career intelligence, behavioral signals, and trust-based scoring.
 
 ---
+
+# Quick Start
+
+## 1. Clone Repository
+
+```bash
+git clone <repository_url>
+cd MiraiKhoj
+```
+
+## 2. Install Backend Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## Run Candidate Ranking
+
+```bash
+python scripts/run_full_pipeline.py --jd data/sample_jd.txt --top-k 100
+```
+
+or, if using a Word document:
+
+```bash
+python scripts/run_full_pipeline.py --jd data/sample_jd.docx --top-k 100
+```
+
+The pipeline will:
+
+- Parse the Job Description
+- Retrieve candidates from the indexed corpus
+- Rank candidates using semantic, career, behavioral, and credibility signals
+- Generate the **Top 100** ranked candidates
+- Save the output to:
+
+```text
+data/outputs/ranked_candidates.csv
+```
+
+## 3. Start Backend
+
+```bash
+uvicorn backend.app:app --reload
+```
+
+Backend:
+http://localhost:8000
+
+---
+
+## 4. Start Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend:
+http://localhost:8080
+
+---
+
+## 5. Open
+
+http://localhost:8080
 
 # System Architecture
 
@@ -421,6 +489,10 @@ MiraiKhoj
 │   │
 │   └── utils/
 │
+├── frontend/
+│
+├── backend/
+│
 └── README.md
 ```
 
@@ -464,22 +536,53 @@ candidate_embeddings.npy
 
 * Sentence Transformers
 * FAISS
+* Gemini 2.5 Flash (LLM Re-ranking)
 * NumPy
 * Pandas
+
+### Frontend
+
+React
+TypeScript
+Vite
+Tailwind CSS
+TanStack Router
+TanStack Query
 
 ### Backend
 
 * Python
 * FastAPI
+* Uvicorn
+
+### API Endpoints
+
+POST /rank
+GET /analytics
+GET /candidate/{candidate_id}
 
 ### Retrieval
 
-* Vector Search
+* FAISS Vector Search
 * Semantic Search
 
 ### Explainability
 
 * Rule-Based AI Explanations
+* LLM-Based Recruiter Reasoning (with fallback)
+
+---
+
+
+## User Interface
+
+MiraiKhoj includes an interactive recruiter dashboard that allows users to:
+
+• Paste any Job Description
+• Rank Top 100 Candidates
+• View Explainable AI Reasons
+• Explore Candidate Analytics
+• Inspect Individual Candidate Profiles
 
 ---
 
@@ -489,10 +592,11 @@ candidate_embeddings.npy
 
 * JD Intelligence
 * Candidate Retrieval
-* Embeddings
+* Embeddings Generation
 * FAISS Indexing
 * Career Intelligence
 * Retrieval Expertise Detection
+* Score Fusion
 * Semantic Ranking
 * Explainability
 
@@ -504,6 +608,14 @@ candidate_embeddings.npy
 * Submission Generation
 * Evaluation Framework
 
+### Frontend & API
+
+• Recruiter Dashboard
+• Analytics Dashboard
+• Candidate Explorer
+• FastAPI Backend
+• Submission Pipeline
+
 ---
 
 # Vision
@@ -513,3 +625,9 @@ MiraiKhoj focuses on:
 > "Ranking candidates based on recruitability, credibility, and relevance — not just keywords."
 
 The system helps recruiters discover high-quality candidates faster while providing transparent and explainable ranking decisions.
+
+---
+
+## License
+
+Developed for the Redrob India Runs Data & AI Challenge.
