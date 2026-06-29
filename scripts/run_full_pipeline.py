@@ -37,11 +37,12 @@ logger = logging.getLogger(__name__)
 def run(jd_text: str, top_k: int = 100, demo: bool = False) -> dict:
     cfg = PathConfig()
     pipeline_cfg = PipelineConfig()
+    
     jd_parser = JDParser()
     parsed_jd = jd_parser.parse(jd_text)
 
     # df = pd.read_csv("data/processed/processed_candidates.csv")
-    df = pd.read_csv(PathConfig().processed_candidates)
+    df = pd.read_csv(cfg.processed_candidates)
     
     if demo:
         cfg.processed_candidates = Path("data/demo/processed_candidates_demo.csv")
