@@ -19,7 +19,7 @@ from typing import Dict, Any
 
 
 CANDIDATE_ID_PATTERN = re.compile(r"^CAND_[0-9]{7}$")
-REQUIRED_COLUMNS = ["candidate_id", "rank", "score", "reason"]
+REQUIRED_COLUMNS = ["candidate_id", "rank", "score", "reasoning"]
 
 
 class SubmissionValidator:
@@ -63,11 +63,11 @@ class SubmissionValidator:
             if not df["score"].is_monotonic_decreasing:
                 warnings.append("Scores are not sorted in descending order")
 
-        empty_reasons = df["reason"].fillna("").astype(str).str.strip().eq("")
+        empty_reasons = df["reasoning"].fillna("").astype(str).str.strip().eq("")
         if empty_reasons.any():
             errors.append("Reason column contains empty values")
 
-        long_reasons = df["reason"].astype(str).str.split().apply(len) > 60
+        long_reasons = df["reasoning"].astype(str).str.split().apply(len) > 60
         if long_reasons.any():
             warnings.append("Some reasons are longer than recommended")
 

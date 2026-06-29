@@ -28,6 +28,7 @@ from embeddings.embedder import EmbeddingEngine
 from utils.config import PathConfig, PipelineConfig, EmbeddingConfig
 from jd.jd_parser import JDParser
 
+# USE_GEMINI = False
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -102,7 +103,10 @@ def run(jd_text: str, top_k: int = 100) -> dict:
     semantic = SemanticRanker()
     final_ranker = FinalRanker()
     explainer = CandidateExplainer()
-    gemini = GeminiReasoner()
+    try:
+        gemini = GeminiReasoner() if USE_GEMINI else None
+    except Exception:
+        gemini = None
 
     bundles: List[CandidateScoreBundle] = []
     for hit in hits:
@@ -168,90 +172,104 @@ def run(jd_text: str, top_k: int = 100) -> dict:
     # ----------------------------
     # LLM Re-ranking (Batch Mode)
     # ----------------------------
+    # if USE_GEMINI:
+    #     top_candidates = ranked[:20]
 
-    top_candidates = ranked[:20]
+    #     batch_size = 5
 
-    batch_size = 5
+    #     for i in range(0, len(top_candidates), batch_size):
 
-    for i in range(0, len(top_candidates), batch_size):
+    #         batch = top_candidates[i:i + batch_size]
 
-        batch = top_candidates[i:i + batch_size]
+    #         payload = []
 
-        payload = []
+    #         for c in batch:
+    #             payload.append({
+    #                 "candidate_id": c.candidate_id,
+    #                 "current_title": c.candidate_payload.get("current_title"),
+    #                 "current_company": c.candidate_payload.get("current_company"),
+    #                 "years_of_experience": c.candidate_payload.get("years_of_experience"),
+    #                 "candidate_text": c.candidate_payload.get("candidate_text"),
+    #                 "current_score": round(c.final_score, 3)
+    #             })
 
-        for c in batch:
-            payload.append({
-                "candidate_id": c.candidate_id,
-                "current_title": c.candidate_payload.get("current_title"),
-                "current_company": c.candidate_payload.get("current_company"),
-                "years_of_experience": c.candidate_payload.get("years_of_experience"),
-                "candidate_text": c.candidate_payload.get("candidate_text"),
-                "current_score": round(c.final_score, 3)
-            })
+    #         if gemini is not None:
+    #             results = gemini.evaluate_batch(jd_text, payload)
+    #         else:
+    #             results = [
+    #                 {
+    #                     "candidate_id": c["candidate_id"],
+    #                     "fit_score": int(c["current_score"] * 100),
+    #                     "reason": "Offline ranking used.",
+    #                 }
+    #                 for c in payload
+    #             ]
 
-        results = gemini.evaluate_batch(jd_text, payload)
+    #         result_lookup = {
+    #             r["candidate_id"]: r
+    #             for r in results
+    #         }
 
-        result_lookup = {
-            r["candidate_id"]: r
-            for r in results
-        }
+    #         for c in batch:
 
-        for c in batch:
+    #             if c.candidate_id not in result_lookup:
+    #                 continue
 
-            if c.candidate_id not in result_lookup:
-                continue
+    #             llm = result_lookup[c.candidate_id]
 
-            llm = result_lookup[c.candidate_id]
+    #             llm_score = llm["fit_score"] / 100
 
-            llm_score = llm["fit_score"] / 100
+    #             recommendation_bonus = {
+    #                 "Strong Yes": 0.05,
+    #                 "Yes": 0.03,
+    #                 "Maybe": 0.00,
+    #                 "No": -0.03,
+    #                 "Strong No": -0.05,
+    #             }
 
-            recommendation_bonus = {
-                "Strong Yes": 0.05,
-                "Yes": 0.03,
-                "Maybe": 0.00,
-                "No": -0.03,
-                "Strong No": -0.05,
-            }
+    #             bonus = recommendation_bonus.get(
+    #                 llm.get("interview_recommendation", "Maybe"),
+    #                 0.0,
+    #             )
 
-            bonus = recommendation_bonus.get(
-                llm.get("interview_recommendation", "Maybe"),
-                0.0,
-            )
+    #             c.final_score = min(
+    #                 1.0,
+    #                 0.80 * c.final_score +
+    #                 0.20 * llm_score +
+    #                 bonus,
+    #             )
+    #             if "reason" in llm:
+    #                 c.candidate_payload["llm_reason"] = llm["reason"]
+    #             if "strengths" in llm:
+    #                 c.candidate_payload["strengths"] = llm.get("strengths", [])
+    #             if "risks" in llm:
+    #                 c.candidate_payload["risks"] = llm.get("risks", [])
 
-            c.final_score = min(
-                1.0,
-                0.80 * c.final_score +
-                0.20 * llm_score +
-                bonus,
-            )
-            if "reason" in llm:
-                c.candidate_payload["llm_reason"] = llm["reason"]
-            if "strengths" in llm:
-                c.candidate_payload["strengths"] = llm.get("strengths", [])
-            if "risks" in llm:
-                c.candidate_payload["risks"] = llm.get("risks", [])
+            
 
-           
+    #         # Final sort
+    #         ranked = sorted(
+    #             top_candidates + ranked[20:],
+    #             key=lambda x: x.final_score,
+    #             reverse=True,
+    #         )[:top_k]
+    # except Exception as e:
+    #     logger.warning("Gemini unavailable. Using local ranking only: %s", e)
 
-        # Final sort
-        ranked = sorted(
-            top_candidates + ranked[20:],
-            key=lambda x: x.final_score,
-            reverse=True,
-        )[:top_k]
 
     rows = []
     for rank, r in enumerate(ranked, start=1):
         reason = explainer.explain(r)
         rows.append({
             "candidate_id": r.candidate_id,
-            "final_score": r.final_score,
             "rank": rank,
-            "candidate_reason": reason,
+            "score": round(r.final_score, 3),
+            "reasoning": reason,
         })
 
     out = pd.DataFrame.from_records(rows)
-    out_path = Path(cfg.ranked_candidates_csv)
+    # out_path = Path(cfg.ranked_candidates_csv)
+    out_path = Path("data/outputs/final_submission.csv")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     print(ranked[0].candidate_payload)
     print(ranked[0].evidence)
@@ -294,5 +312,8 @@ def main() -> None:
     run(jd_text, top_k=args.top_k)
 
 
+
 if __name__ == "__main__":
     main()
+
+

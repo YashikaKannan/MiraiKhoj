@@ -250,7 +250,7 @@ class EmbeddingConfig:
     batch_size: int = 64
     max_length: int = 512
     normalize: bool = True
-    use_gpu_if_available: bool = True
+    use_gpu_if_available: bool = False
 
 
 @dataclass(slots=True)

@@ -1,15 +1,53 @@
 Senior AI Engineer
 
-Required Skills:
-Python
-Machine Learning
-NLP
-RAG
-Vector Databases
-FAISS
-Elasticsearch
-Recommendation Systems
-Search Ranking
+Location
+Experience (5–9 years)
 
-Experience:
-3+ years
+Responsibilities
+
+Required Skills
+- Embeddings
+- FAISS
+- Elasticsearch
+- OpenSearch
+- Pinecone
+- Weaviate
+- Qdrant
+- Milvus
+- Python
+- Ranking
+- Retrieval
+- NDCG
+- MRR
+- MAP
+- A/B Testing
+
+Preferred Skills
+- LoRA
+- QLoRA
+- PEFT
+- Learning-to-Rank
+- Distributed Systems
+- HR Tech
+
+Not Suitable
+- Consulting-only careers
+- Computer Vision only
+- Speech only
+- Robotics only
+- Marketing
+- Title chasers
+
+Ideal Candidate
+- Product company
+- Ranking/Search/Recommendation systems
+- 6–8 years
+- AI/Search Engineer
+- Retrieval experience
+- Active candidate
+
+Final Note
+- Don't rank based on keywords alone.
+- Use career evidence.
+- Use behavioral signals.
+- Penalize keyword stuffing.

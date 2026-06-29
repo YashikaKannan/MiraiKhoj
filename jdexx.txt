@@ -1,0 +1,36 @@
+Senior Backend Python Engineer
+
+Experience: 4–7 Years
+
+Required Skills
+Python
+FastAPI
+Django
+PostgreSQL
+Redis
+Docker
+Kubernetes
+REST APIs
+Microservices
+System Design
+AWS
+Preferred Skills
+Kafka
+RabbitMQ
+CI/CD
+Linux
+GitHub Actions
+Monitoring (Prometheus / Grafana)
+Responsibilities
+Build and maintain scalable backend services.
+Design RESTful APIs for high-traffic applications.
+Optimize PostgreSQL queries and Redis caching.
+Deploy services using Docker and Kubernetes.
+Build event-driven systems using Kafka.
+Collaborate with frontend and DevOps teams.
+Write clean, maintainable, and well-tested Python code.
+Ensure system reliability, scalability, and performance.
+Nice to Have
+Experience with distributed systems.
+Knowledge of cloud-native architectures.
+Experience building production SaaS platforms.

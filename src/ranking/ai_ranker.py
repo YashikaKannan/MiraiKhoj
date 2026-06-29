@@ -131,17 +131,39 @@ class FinalRanker:
             "customer support",
             "mechanical engineer",
             "civil engineer",
+            "electrical engineer",
+            "electronics engineer",
+            "production engineer",
+            "quality engineer",
             "sales",
             "accountant",
         ]
+        
 
         # Reward good AI/Search careers
         if any(role in title for role in strong_roles):
-            final_score += 0.08
+            final_score += 0.12
 
         # Penalize clearly unrelated careers
         if any(role in title for role in irrelevant_roles):
-            final_score -= 0.20
+            final_score -= 0.35
+
+
+        # ----------------------------------------------------
+        # Experience Adjustment
+        # ----------------------------------------------------
+
+        years = float(bundle.candidate_payload.get("years_of_experience", bundle.candidate_payload.get("years_of_experience_numeric", 0),
+    ))
+
+        # Preferred range from the Redrob JD
+        if 5 <= years <= 9:
+            final_score += 0.03
+        elif years < 4:
+            final_score -= 0.08
+        elif years > 12:
+            final_score -= 0.02
+
 
         return max(0.0, min(1.0, final_score))
 

@@ -2,7 +2,7 @@
 MiraiKhoj - Submission Generator
 
 Generates final_submission.csv in required format:
-candidate_id,rank,score,reason
+candidate_id,rank,score,reasoning
 """
 
 from __future__ import annotations
@@ -11,8 +11,7 @@ import pandas as pd
 from pathlib import Path
 from typing import Optional
 
-
-REQUIRED_COLUMNS = ["candidate_id", "rank", "score", "reason"]
+REQUIRED_COLUMNS = ["candidate_id", "rank", "score", "reasoning"]
 
 
 class SubmissionGenerator:
@@ -24,7 +23,7 @@ class SubmissionGenerator:
         ranked_input_path: str,
         output_path: str = "data/outputs/final_submission.csv",
         score_column: str = "final_score",
-        reason_column: str = "reason",
+        reason_column: str = "reasoning",
     ) -> pd.DataFrame:
         df = pd.read_csv(ranked_input_path)
 
@@ -40,15 +39,15 @@ class SubmissionGenerator:
             elif "fusion_reason" in df.columns:
                 reason_column = "fusion_reason"
             else:
-                df["reason"] = "Candidate ranked based on AI relevance, behavioral quality, and profile trust signals."
-                reason_column = "reason"
+                df["reasoning"] = "Candidate ranked based on AI relevance, behavioral quality, and profile trust signals."
+                reason_column = "reasoning"
 
         df = df.sort_values(score_column, ascending=False).head(self.top_k).copy()
         df["rank"] = range(1, len(df) + 1)
         df["score"] = df[score_column].round(4)
-        df["reason"] = df[reason_column].fillna("").astype(str).apply(self._clean_reason)
+        df["reasoning"] = df[reason_column].fillna("").astype(str).apply(self._clean_reason)
 
-        submission = df[["candidate_id", "rank", "score", "reason"]]
+        submission = df[["candidate_id", "rank", "score", "reasoning"]]
 
         output = Path(output_path)
         output.parent.mkdir(parents=True, exist_ok=True)
