@@ -5,6 +5,14 @@ from docx import Document
 import tempfile
 
 from scripts.run_full_pipeline import run
+from utils.config import PathConfig
+
+cfg = PathConfig()
+
+cfg.processed_candidates = Path("data/demo/processed_candidates_demo.csv")
+cfg.candidate_embeddings = Path("data/demo/candidate_embeddings_demo.npy")
+cfg.candidate_index = Path("data/demo/candidate_index_demo.faiss")
+cfg.candidate_index_ids = Path("data/demo/candidate_index_ids_demo.json")
 
 st.set_page_config(
     page_title="MiraiKhoj",
@@ -49,7 +57,7 @@ if st.button("Rank Candidates"):
 
     with st.spinner("Ranking candidates..."):
 
-        report = run(jd_text, top_k=100)
+        report = run(jd_text, top_k=100, demo=True)
 
     csv_path = Path("data/outputs/final_submission.csv")
 

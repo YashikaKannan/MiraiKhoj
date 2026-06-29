@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from docx import Document
 
-from llm.gemini_reasoner import GeminiReasoner
+# from llm.gemini_reasoner import GeminiReasoner
 from career.career_analyzer import CareerAnalyzer
 from career.retrieval_expertise import RetrievalExpertiseDetector
 from behavior.signal_engine import BehavioralSignalEngine
@@ -34,14 +34,22 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger(__name__)
 
 
-def run(jd_text: str, top_k: int = 100) -> dict:
+def run(jd_text: str, top_k: int = 100, demo: bool = False) -> dict:
     cfg = PathConfig()
     pipeline_cfg = PipelineConfig()
     jd_parser = JDParser()
     parsed_jd = jd_parser.parse(jd_text)
 
-    df = pd.read_csv("data/processed/processed_candidates.csv")
+    # df = pd.read_csv("data/processed/processed_candidates.csv")
+    df = pd.read_csv(PathConfig().processed_candidates)
     
+    if demo:
+        cfg.processed_candidates = Path("data/demo/processed_candidates_demo.csv")
+        cfg.candidate_embeddings = Path("data/demo/candidate_embeddings_demo.npy")
+        cfg.candidate_index = Path("data/demo/candidate_index_demo.faiss")
+        cfg.candidate_index_ids = Path("data/demo/candidate_index_ids_demo.json")
+
+
     emb = np.load(cfg.candidate_embeddings, mmap_mode="r")
     print("Candidates:", len(df))
     print("Embeddings:", emb.shape[0])
