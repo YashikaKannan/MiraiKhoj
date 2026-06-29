@@ -74,3 +74,8 @@ if st.button("Rank Candidates"):
             file_name="final_submission.csv",
             mime="text/csv",
         )
+
+st.info(
+    "Demo Mode: This sandbox runs on a curated sample of 100 candidates for reproducibility. "
+    "The full pipeline supports the complete candidate dataset and is available in the GitHub repository."
+)
