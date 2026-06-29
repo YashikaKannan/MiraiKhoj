@@ -28,7 +28,7 @@ from embeddings.embedder import EmbeddingEngine
 from utils.config import PathConfig, PipelineConfig, EmbeddingConfig
 from jd.jd_parser import JDParser
 
-# USE_GEMINI = False
+USE_GEMINI = False
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -37,20 +37,18 @@ logger = logging.getLogger(__name__)
 def run(jd_text: str, top_k: int = 100, demo: bool = False) -> dict:
     cfg = PathConfig()
     pipeline_cfg = PipelineConfig()
-    
-    jd_parser = JDParser()
-    parsed_jd = jd_parser.parse(jd_text)
 
     # df = pd.read_csv("data/processed/processed_candidates.csv")
-    df = pd.read_csv(cfg.processed_candidates)
-    
     if demo:
         cfg.processed_candidates = Path("data/demo/processed_candidates_demo.csv")
         cfg.candidate_embeddings = Path("data/demo/candidate_embeddings_demo.npy")
         cfg.candidate_index = Path("data/demo/candidate_index_demo.faiss")
         cfg.candidate_index_ids = Path("data/demo/candidate_index_ids_demo.json")
 
-
+    jd_parser = JDParser()
+    parsed_jd = jd_parser.parse(jd_text)
+    df = pd.read_csv(cfg.processed_candidates)
+    
     emb = np.load(cfg.candidate_embeddings, mmap_mode="r")
     print("Candidates:", len(df))
     print("Embeddings:", emb.shape[0])
