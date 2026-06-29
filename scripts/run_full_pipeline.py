@@ -40,7 +40,8 @@ def run(jd_text: str, top_k: int = 100) -> dict:
     jd_parser = JDParser()
     parsed_jd = jd_parser.parse(jd_text)
 
-    df = pd.read_csv("data/processed/processed_candidates.csv")
+    # df = pd.read_csv("data/processed/processed_candidates.csv")
+    df = pd.read_csv(PathConfig().processed_candidates)
     
     emb = np.load(cfg.candidate_embeddings, mmap_mode="r")
     print("Candidates:", len(df))
