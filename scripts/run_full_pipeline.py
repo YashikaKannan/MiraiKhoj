@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from docx import Document
 
-from llm.gemini_reasoner import GeminiReasoner
+# from llm.gemini_reasoner import GeminiReasoner
 from career.career_analyzer import CareerAnalyzer
 from career.retrieval_expertise import RetrievalExpertiseDetector
 from behavior.signal_engine import BehavioralSignalEngine
