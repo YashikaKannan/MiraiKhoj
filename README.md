@@ -50,6 +50,7 @@ pip install -r requirements.txt
 ```
 
 ## Run Candidate Ranking
+This command generates the final Top-100 ranked candidate submission.
 
 ```bash
 python scripts/run_full_pipeline.py --jd data/sample_jd.txt --top-k 100
@@ -72,6 +73,17 @@ The pipeline will:
 ```text
 data/outputs/ranked_candidates.csv
 ```
+## Pre-computation
+
+MiraiKhoj precomputes candidate embeddings and the FAISS index during the data preparation stage.
+
+Generated artifacts:
+
+- data/processed/candidate_embeddings.npy
+- data/processed/candidate_index.faiss
+- data/processed/candidate_index_ids.json
+
+During ranking, these precomputed artifacts are loaded directly, allowing the complete ranking pipeline to run offline on CPU without regenerating embeddings.
 
 ## 3. Start Backend
 
@@ -96,6 +108,33 @@ Frontend:
 http://localhost:8080
 
 ---
+
+### Streamlit Sandbox
+
+```text
+For reproducibility and evaluation, MiraiKhoj also includes a lightweight Streamlit sandbox.
+The Streamlit sandbox is intended for reproducibility on small candidate samples (≤100 candidates), while the full pipeline supports large-scale candidate ranking.
+```
+
+Features:
+
+- Upload Job Description (`.txt` or `.docx`)
+- Or paste the Job Description directly
+- Run the complete ranking pipeline
+- Preview the Top 20 ranked candidates
+- Download the final Top 100 submission CSV
+
+Run locally:
+
+```bash
+streamlit run streamlit-app.py
+```
+
+Deployed Sandbox:
+
+> https://STREAMLIT_LINK.streamlit.app
+---
+
 
 ## 5. Open
 
@@ -491,6 +530,8 @@ MiraiKhoj
 │
 ├── tests/
 │
+├── streamlit-app.py
+│
 ├── frontend/
 │
 ├── backend/
@@ -498,19 +539,22 @@ MiraiKhoj
 └── README.md
 ```
 
----
-
 # Output
 
 The system generates:
 
-## Ranked Candidates
+## Top 100 Ranked Candidates
 
 ```csv
 candidate_id
 rank
-final_score
-candidate_reason
+score
+reasoning
+```
+
+## The final submission file is generated as:
+```text
+data/outputs/final_submission.csv
 ```
 
 ## Candidate Explanations
@@ -544,13 +588,12 @@ candidate_embeddings.npy
 
 ### Frontend
 
-React
-TypeScript
-Vite
-Tailwind CSS
-TanStack Router
-TanStack Query
-
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* Streamlit (Sandbox)
+  
 ### Backend
 
 * Python
@@ -629,6 +672,8 @@ MiraiKhoj focuses on:
 The system helps recruiters discover high-quality candidates faster while providing transparent and explainable ranking decisions.
 
 ---
+
+# The ranking pipeline runs completely offline after the candidate embeddings and FAISS index have been precomputed. No external API calls are required during ranking.
 
 ## License
 
