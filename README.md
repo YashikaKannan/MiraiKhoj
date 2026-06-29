@@ -132,7 +132,7 @@ streamlit run streamlit-app.py
 
 Deployed Sandbox:
 
-> https://STREAMLIT_LINK.streamlit.app
+> https://mirai-khoj.streamlit.app
 ---
 
 
