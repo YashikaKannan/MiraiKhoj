@@ -11,3 +11,5 @@ orjson>=3.10.0
 python-docx
 fastapi
 uvicorn
+
+# python -m pip install openpyxl

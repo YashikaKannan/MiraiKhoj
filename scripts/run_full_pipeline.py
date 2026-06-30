@@ -292,6 +292,10 @@ def run(jd_text: str, top_k: int = 100, demo: bool = False) -> dict:
     rpt_md = ["# Ranking Report\n\n", f"- Total ranked: {report['total_ranked']}\n", f"- Output: {report['output_file']}\n"]
     rpt_path.write_text("".join(rpt_md), encoding="utf-8")
     logger.info("Wrote ranked candidates to %s", out_path)
+
+    df = pd.read_csv("data/outputs/final_submission.csv")
+    df.to_excel("data/outputs/final_submission.xlsx", index=False)
+    
     return report
 
 
