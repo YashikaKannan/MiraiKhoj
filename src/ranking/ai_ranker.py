@@ -189,5 +189,6 @@ class FinalRanker:
                     candidate_payload=bundle.candidate_payload,
                 )
             )
-        ranked.sort(key=lambda item: item.final_score, reverse=True)
+        # ranked.sort(key=lambda item: item.final_score, reverse=True)
+        ranked.sort(key=lambda x: (-x.final_score, x.candidate_id))
         return ranked

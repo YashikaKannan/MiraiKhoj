@@ -172,8 +172,8 @@ def run(jd_text: str, top_k: int = 100, demo: bool = False) -> dict:
             )
         )
 
-    # ranked = final_ranker.rank(bundles)[:top_k]
-    ranked = final_ranker.rank(bundles)
+    ranked = final_ranker.rank(bundles)[:top_k]
+    
 
     
     # ----------------------------

@@ -59,7 +59,7 @@ class CandidateExplainer:
 
         if ranked_candidate.matched_skills:
 
-            skills = ", ".join(ranked_candidate.matched_skills[:4])
+            skills = ", ".join(ranked_candidate.matched_skills[:3])
 
             # reasons.append(
             #     f"Matched {len(ranked_candidate.matched_skills)} key JD skills including {skills}."
@@ -255,5 +255,17 @@ class CandidateExplainer:
                 "Overall profile demonstrates a solid match for the role."
             )
         #  Remove duplicate sentences while preserving order
+        # Remove duplicate sentences
         reasons = list(dict.fromkeys(reasons))
-        return " ".join(reasons)
+
+        # Keep only the first 4 reasons
+        reasons = reasons[:4]
+
+        reason = " ".join(reasons)
+
+        # Limit to ~45 words
+        words = reason.split()
+        if len(words) > 45:
+            reason = " ".join(words[:45]) + "..."
+
+        return reason
