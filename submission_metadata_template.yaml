@@ -20,7 +20,7 @@ team_members:
 
   - name: "Keerthi Vasan V"
     email: "keerthivasan08.coral@gmail.com"
-    role: "Data Engineer"
+    role: "Data Engineering, Evaluation & Pipeline Development"
   # Add more members as needed; solo participants list just one member
 
 # ============================================================================
@@ -43,15 +43,15 @@ reproduce_command: "python scripts/run_full_pipeline.py --jd jd.txt --top-k 100"
 # Compute environment
 # ============================================================================
 compute:
-  platform: "Windows 11"                        # Or: "AWS EC2 c5.4xlarge", "Local Linux box", etc.
+  platform: "Local Windows 11"                        # Or: "AWS EC2 c5.4xlarge", "Local Linux box", etc.
   cpu_cores: 8                                  # Number of CPU cores used
   ram_gb: 16                                    # Available RAM in GB
   python_version: "3.11"                        # python --version
   os: "windows 11"                              # Or "Ubuntu 22.04 LTS", etc.
   uses_gpu_for_inference: false                 # Must be false — see compute constraints
   has_network_during_ranking: false             # Must be false — no API calls during ranking
-  pre_computation_required: false               # true if you pre-compute embeddings or train models offline
-  pre_computation_time_minutes: 0               # Approximate, if applicable
+  pre_computation_required: true                # true if you pre-compute embeddings or train models offline
+  pre_computation_time_minutes: 8               # Approximate, if applicable
 
 # ============================================================================
 # AI tools declaration
@@ -62,7 +62,7 @@ compute:
 ai_tools_used:
   - "ChatGPT"           # for architecture discussion, code review
   - "Lovable"           # for frontend
-  - "GitHub Copilot0 "  # for testing(tests)
+  - "GitHub Copilot"    # for testing(tests)
 
 ai_usage_summary: |
   ChatGPT was used to discuss architecture, debug Python code, improve explainability,
